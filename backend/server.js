@@ -5,7 +5,7 @@ const productsData = require("./products.json");
 const app = express();
 app.use(cors());
 
-// Mock gold price (örnek: 60 USD/gram)
+//şimdilik sabit altın fiyatı
 const goldPrice = 60;
 
 // API endpoint
@@ -15,7 +15,7 @@ app.get("/api/products", (req, res) => {
 
         return {
             ...product,
-            price: price.toFixed(2) // 2 ondalık
+            price: price.toFixed(2)
         };
     });
 
@@ -24,5 +24,5 @@ app.get("/api/products", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Backend running on http://localhost:${PORT}`);
+    console.log(`Backend çalışıyor http://localhost:${PORT}`);
 });

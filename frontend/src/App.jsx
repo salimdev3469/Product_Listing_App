@@ -29,7 +29,7 @@ function App() {
         Product List
       </h1>
 
-      {/* Kaydırılabilir container */}
+
       <div
         style={{
           display: "flex",
@@ -45,7 +45,7 @@ function App() {
             <div
               key={index}
               style={{
-                flex: "0 0 auto", // kart genişliği sabit kalacak
+                flex: "0 0 auto",
                 width: "250px",
                 borderRadius: "12px",
                 padding: "15px",
@@ -62,7 +62,6 @@ function App() {
               <h3 style={{ margin: "10px 0", color: "black" }}>{product.name}</h3>
               <p style={{ fontWeight: "bold", color: "#000" }}>${product.price} USD</p>
 
-              {/* Renk seçenekleri */}
               <div
                 style={{
                   display: "flex",
