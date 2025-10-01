@@ -1,3 +1,5 @@
+# .env dosyasını gizle
+.env
 # Logs
 logs
 *.log
