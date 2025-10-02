@@ -1,21 +1,20 @@
 import { useEffect, useState, useRef } from "react";
-import { FaStar } from "react-icons/fa";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaStar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./App.css";
 
-// Yükleme animasyonu için basit bir bileşen (CSS ile düzenlenebilir)
+// Loading spinner
 const LoadingSpinner = () => (
   <div
     style={{
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      height: "200px", // Yükleme alanını belirler
+      height: "200px",
       fontSize: "20px",
       color: "#333",
     }}
   >
-    <div className="spinner"></div> {/* Bu sınıfı CSS'e ekleyeceğiz */}
+    <div className="spinner"></div>
     Yükleniyor...
   </div>
 );
@@ -33,16 +32,16 @@ const useWindowWidth = () => {
 function App() {
   const [products, setProducts] = useState([]);
   const [selectedColors, setSelectedColors] = useState({});
-  // Yüklenme durumunu tutacak yeni state
   const [isLoading, setIsLoading] = useState(true);
   const sliderRef = useRef(null);
   const windowWidth = useWindowWidth();
 
-  let currentCardWidth;
-  let currentCardGap;
-  let currentScrollAmount;
-  let sliderContainerMaxWidth;
-  let cardsVisible;
+  // Prod veya dev ortamına göre API URL
+  const API_URL =
+    process.env.REACT_APP_API_URL ||
+    "https://product-listing-app-1-t7h5.onrender.com/api/products";
+
+  let currentCardWidth, currentCardGap, currentScrollAmount, sliderContainerMaxWidth, cardsVisible;
 
   if (windowWidth > 1550) {
     currentCardWidth = 380;
@@ -63,13 +62,13 @@ function App() {
   }
 
   currentScrollAmount = currentCardWidth + currentCardGap;
-  sliderContainerMaxWidth = (currentCardWidth * cardsVisible) + (currentCardGap * (cardsVisible - 1));
+  sliderContainerMaxWidth = currentCardWidth * cardsVisible + currentCardGap * (cardsVisible - 1);
 
   const isMobile = windowWidth <= 600;
 
   useEffect(() => {
-    // Veri çekme başladığında isLoading zaten true
-    fetch("http://localhost:5000/api/products")
+    setIsLoading(true);
+    fetch(API_URL)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -77,14 +76,9 @@ function App() {
         data.forEach((_, i) => (defaultColors[i] = "yellow"));
         setSelectedColors(defaultColors);
       })
-      .catch((error) => {
-        console.error("Ürünler yüklenirken hata oluştu:", error);
-      })
-      .finally(() => {
-        // Veri çekme tamamlandığında (başarılı veya başarısız) loading'i false yap
-        setIsLoading(false);
-      });
-  }, []);
+      .catch((error) => console.error("Ürünler yüklenirken hata oluştu:", error))
+      .finally(() => setIsLoading(false));
+  }, [API_URL]);
 
   const handleColorChange = (index, color) => {
     setSelectedColors((prev) => ({
@@ -100,16 +94,10 @@ function App() {
           ? sliderRef.current.scrollLeft - currentScrollAmount
           : sliderRef.current.scrollLeft + currentScrollAmount;
 
-      sliderRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: "smooth",
-      });
+      sliderRef.current.scrollTo({ left: newScrollLeft, behavior: "smooth" });
     }
   };
 
-  // ------------------------------------------------------------------
-
-  // isLoading true iken yükleme animasyonunu göster
   if (isLoading) {
     return (
       <div style={{ background: "#fff", minHeight: "100vh" }}>
@@ -125,13 +113,11 @@ function App() {
         >
           Product List
         </h1>
-        {/* Yükleniyor... */}
         <LoadingSpinner />
       </div>
     );
   }
 
-  // Veriler yüklendikten sonra normal içeriği göster
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
       <h1
@@ -150,11 +136,10 @@ function App() {
       <div
         style={{
           position: "relative",
-          maxWidth: isMobile ? '100%' : `${sliderContainerMaxWidth}px`,
+          maxWidth: isMobile ? "100%" : `${sliderContainerMaxWidth}px`,
           margin: "0 auto",
         }}
       >
-        {/* Sol ok butonu */}
         <button
           onClick={() => scroll("left")}
           style={{
@@ -162,7 +147,7 @@ function App() {
             left: isMobile ? "5px" : "-50px",
             top: "40%",
             transform: "translateY(-50%)",
-            background: isMobile ? "rgba(255, 255, 255, 0.7)" : "transparent",
+            background: isMobile ? "rgba(255,255,255,0.7)" : "transparent",
             borderRadius: isMobile ? "50%" : "0",
             border: "none",
             cursor: "pointer",
@@ -175,7 +160,6 @@ function App() {
           <FaChevronLeft />
         </button>
 
-        {/* Ürün Kaydırıcısı */}
         <div
           ref={sliderRef}
           style={{
@@ -205,10 +189,7 @@ function App() {
                 <img
                   src={product.images[selectedColor]}
                   alt={product.name}
-                  style={{
-                    width: "100%",
-                    borderRadius: "8px",
-                  }}
+                  style={{ width: "100%", borderRadius: "8px" }}
                 />
                 <h3
                   className="medium-montserrat"
@@ -216,21 +197,11 @@ function App() {
                 >
                   {product.name}
                 </h3>
-                <p
-                  className="regular-montserrat"
-                  style={{ color: "#000", fontSize: isMobile ? "14px" : "15px" }}
-                >
+                <p className="regular-montserrat" style={{ color: "#000", fontSize: isMobile ? "14px" : "15px" }}>
                   ${product.price} USD
                 </p>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "left",
-                    gap: "10px",
-                    margin: "10px 0",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "left", gap: "10px", margin: "10px 0" }}>
                   {["yellow", "white", "rose"].map((color) => (
                     <button
                       key={color}
@@ -240,10 +211,7 @@ function App() {
                         width: "24px",
                         height: "24px",
                         borderRadius: "50%",
-                        border:
-                          selectedColor === color
-                            ? "2px solid black"
-                            : "none",
+                        border: selectedColor === color ? "2px solid black" : "none",
                         background: "transparent",
                         cursor: "pointer",
                         display: "flex",
@@ -256,56 +224,26 @@ function App() {
                           width: "16px",
                           height: "16px",
                           borderRadius: "50%",
-                          background:
-                            color === "yellow"
-                              ? "#E6CA97"
-                              : color === "white"
-                                ? "#D9D9D9"
-                                : "#E1A4A9",
+                          background: color === "yellow" ? "#E6CA97" : color === "white" ? "#D9D9D9" : "#E1A4A9",
                         }}
                       />
                     </button>
                   ))}
                 </div>
 
-                <p
-                  className="avenir-book"
-                  style={{ color: "#777", fontSize: "12px" }}
-                >
-                  {selectedColor === "yellow"
-                    ? "Yellow Gold"
-                    : selectedColor === "white"
-                      ? "White Gold"
-                      : "Rose Gold"}
+                <p className="avenir-book" style={{ color: "#777", fontSize: "12px" }}>
+                  {selectedColor === "yellow" ? "Yellow Gold" : selectedColor === "white" ? "White Gold" : "Rose Gold"}
                 </p>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "left",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "left", alignItems: "center", gap: "5px" }}>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <FaStar
                       key={i}
-                      color={
-                        i < Math.round(product.popularityScore * 5)
-                          ? "#f5a623"
-                          : "#ddd"
-                      }
+                      color={i < Math.round(product.popularityScore * 5) ? "#f5a623" : "#ddd"}
                       size={14}
                     />
                   ))}
-                  <span
-                    className="avenir-book"
-                    style={{
-                      marginLeft: "5px",
-                      color: "black",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <span className="avenir-book" style={{ marginLeft: "5px", color: "black", fontSize: "14px" }}>
                     {(product.popularityScore * 5).toFixed(1)}/5
                   </span>
                 </div>
@@ -314,7 +252,6 @@ function App() {
           })}
         </div>
 
-        {/* Sağ ok butonu */}
         <button
           onClick={() => scroll("right")}
           style={{
@@ -322,7 +259,7 @@ function App() {
             right: isMobile ? "5px" : "-50px",
             top: "40%",
             transform: "translateY(-50%)",
-            background: isMobile ? "rgba(255, 255, 255, 0.7)" : "transparent",
+            background: isMobile ? "rgba(255,255,255,0.7)" : "transparent",
             borderRadius: isMobile ? "50%" : "0",
             border: "none",
             cursor: "pointer",
