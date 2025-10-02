@@ -3,17 +3,50 @@ import { FaStar } from "react-icons/fa";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./App.css";
 
+const useWindowWidth = () => {
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  return width;
+};
+
 function App() {
   const [products, setProducts] = useState([]);
   const [selectedColors, setSelectedColors] = useState({});
   const sliderRef = useRef(null);
+  const windowWidth = useWindowWidth();
 
-  const CARD_WIDTH = 380;
-  const CARD_GAP = 35;
-  const SCROLL_AMOUNT = CARD_WIDTH + CARD_GAP;
+  let currentCardWidth;
+  let currentCardGap;
+  let currentScrollAmount;
+  let sliderContainerMaxWidth;
+  let cardsVisible;
 
-  const MAX_CARDS_VISIBLE = 4;
-  const SLIDER_MAX_WIDTH = (CARD_WIDTH * MAX_CARDS_VISIBLE) + (CARD_GAP * (MAX_CARDS_VISIBLE - 1));
+  if (windowWidth > 1550) {
+    currentCardWidth = 380;
+    currentCardGap = 35;
+    cardsVisible = 4;
+  } else if (windowWidth > 1200) {
+    currentCardWidth = 350;
+    currentCardGap = 30;
+    cardsVisible = 3;
+  } else if (windowWidth > 600) {
+    currentCardWidth = 300;
+    currentCardGap = 20;
+    cardsVisible = 2;
+  } else {
+    currentCardWidth = windowWidth * 0.85;
+    currentCardGap = windowWidth * 0.05;
+    cardsVisible = 1;
+  }
+
+  currentScrollAmount = currentCardWidth + currentCardGap;
+  sliderContainerMaxWidth = (currentCardWidth * cardsVisible) + (currentCardGap * (cardsVisible - 1));
+
+  const isMobile = windowWidth <= 600;
 
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
@@ -37,8 +70,8 @@ function App() {
     if (sliderRef.current) {
       const newScrollLeft =
         direction === "left"
-          ? sliderRef.current.scrollLeft - SCROLL_AMOUNT
-          : sliderRef.current.scrollLeft + SCROLL_AMOUNT;
+          ? sliderRef.current.scrollLeft - currentScrollAmount
+          : sliderRef.current.scrollLeft + currentScrollAmount;
 
       sliderRef.current.scrollTo({
         left: newScrollLeft,
@@ -55,7 +88,7 @@ function App() {
           textAlign: "center",
           marginBottom: "30px",
           color: "black",
-          fontSize: "45px",
+          fontSize: isMobile ? "32px" : "45px",
           paddingTop: "40px",
         }}
       >
@@ -65,7 +98,7 @@ function App() {
       <div
         style={{
           position: "relative",
-          maxWidth: `${SLIDER_MAX_WIDTH}px`,
+          maxWidth: isMobile ? '100%' : `${sliderContainerMaxWidth}px`,
           margin: "0 auto",
         }}
       >
@@ -73,14 +106,15 @@ function App() {
           onClick={() => scroll("left")}
           style={{
             position: "absolute",
-            left: "-50px",
+            left: isMobile ? "5px" : "-50px",
             top: "40%",
             transform: "translateY(-50%)",
-            background: "transparent",
+            background: isMobile ? "rgba(255, 255, 255, 0.7)" : "transparent",
+            borderRadius: isMobile ? "50%" : "0",
             border: "none",
             cursor: "pointer",
             zIndex: 10,
-            fontSize: "40px",
+            fontSize: isMobile ? "24px" : "40px",
             color: "#333",
             padding: "10px",
           }}
@@ -92,11 +126,11 @@ function App() {
           ref={sliderRef}
           style={{
             display: "flex",
-            gap: `${CARD_GAP}px`,
+            gap: `${currentCardGap}px`,
             overflowX: "hidden",
             paddingBottom: "10px",
             scrollSnapType: "x mandatory",
-            padding: "0",
+            padding: isMobile ? `0 ${currentCardGap}px` : "0",
           }}
         >
           {products.map((product, index) => {
@@ -106,12 +140,12 @@ function App() {
                 key={index}
                 style={{
                   flex: "0 0 auto",
-                  width: `${CARD_WIDTH}px`,
+                  width: `${currentCardWidth}px`,
                   borderRadius: "12px",
                   padding: "15px",
                   textAlign: "left",
                   background: "#fff",
-                  scrollSnapAlign: "start",
+                  scrollSnapAlign: isMobile ? "center" : "start",
                 }}
               >
                 <img
@@ -124,13 +158,13 @@ function App() {
                 />
                 <h3
                   className="medium-montserrat"
-                  style={{ margin: "10px 0", color: "black", fontSize: "15px" }}
+                  style={{ margin: "10px 0", color: "black", fontSize: isMobile ? "14px" : "15px" }}
                 >
                   {product.name}
                 </h3>
                 <p
                   className="regular-montserrat"
-                  style={{ color: "#000", fontSize: "15px" }}
+                  style={{ color: "#000", fontSize: isMobile ? "14px" : "15px" }}
                 >
                   ${product.price} USD
                 </p>
@@ -230,14 +264,15 @@ function App() {
           onClick={() => scroll("right")}
           style={{
             position: "absolute",
-            right: "-50px",
+            right: isMobile ? "5px" : "-50px",
             top: "40%",
             transform: "translateY(-50%)",
-            background: "transparent",
+            background: isMobile ? "rgba(255, 255, 255, 0.7)" : "transparent",
+            borderRadius: isMobile ? "50%" : "0",
             border: "none",
             cursor: "pointer",
             zIndex: 10,
-            fontSize: "40px",
+            fontSize: isMobile ? "24px" : "40px",
             color: "#333",
             padding: "10px",
           }}
