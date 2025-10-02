@@ -3,6 +3,23 @@ import { FaStar } from "react-icons/fa";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./App.css";
 
+// Yükleme animasyonu için basit bir bileşen (CSS ile düzenlenebilir)
+const LoadingSpinner = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "200px", // Yükleme alanını belirler
+      fontSize: "20px",
+      color: "#333",
+    }}
+  >
+    <div className="spinner"></div> {/* Bu sınıfı CSS'e ekleyeceğiz */}
+    Yükleniyor...
+  </div>
+);
+
 const useWindowWidth = () => {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -16,6 +33,8 @@ const useWindowWidth = () => {
 function App() {
   const [products, setProducts] = useState([]);
   const [selectedColors, setSelectedColors] = useState({});
+  // Yüklenme durumunu tutacak yeni state
+  const [isLoading, setIsLoading] = useState(true);
   const sliderRef = useRef(null);
   const windowWidth = useWindowWidth();
 
@@ -49,6 +68,7 @@ function App() {
   const isMobile = windowWidth <= 600;
 
   useEffect(() => {
+    // Veri çekme başladığında isLoading zaten true
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
       .then((data) => {
@@ -56,6 +76,13 @@ function App() {
         const defaultColors = {};
         data.forEach((_, i) => (defaultColors[i] = "yellow"));
         setSelectedColors(defaultColors);
+      })
+      .catch((error) => {
+        console.error("Ürünler yüklenirken hata oluştu:", error);
+      })
+      .finally(() => {
+        // Veri çekme tamamlandığında (başarılı veya başarısız) loading'i false yap
+        setIsLoading(false);
       });
   }, []);
 
@@ -80,6 +107,31 @@ function App() {
     }
   };
 
+  // ------------------------------------------------------------------
+
+  // isLoading true iken yükleme animasyonunu göster
+  if (isLoading) {
+    return (
+      <div style={{ background: "#fff", minHeight: "100vh" }}>
+        <h1
+          className="avenir-book"
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+            color: "black",
+            fontSize: isMobile ? "32px" : "45px",
+            paddingTop: "40px",
+          }}
+        >
+          Product List
+        </h1>
+        {/* Yükleniyor... */}
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Veriler yüklendikten sonra normal içeriği göster
   return (
     <div style={{ background: "#fff", minHeight: "100vh" }}>
       <h1
@@ -102,6 +154,7 @@ function App() {
           margin: "0 auto",
         }}
       >
+        {/* Sol ok butonu */}
         <button
           onClick={() => scroll("left")}
           style={{
@@ -122,6 +175,7 @@ function App() {
           <FaChevronLeft />
         </button>
 
+        {/* Ürün Kaydırıcısı */}
         <div
           ref={sliderRef}
           style={{
@@ -260,6 +314,7 @@ function App() {
           })}
         </div>
 
+        {/* Sağ ok butonu */}
         <button
           onClick={() => scroll("right")}
           style={{

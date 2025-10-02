@@ -1,9 +1,10 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const productsData = require("./products.json");
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const fetch = (...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(cors());
@@ -24,7 +25,8 @@ app.get("/api/products", async (req, res) => {
         const goldPrice = goldData.price;
 
         const productsWithPrice = productsData.map((product) => {
-            const price = (product.popularityScore + 1) * product.weight * goldPrice;
+            const price =
+                (product.popularityScore + 1) * product.weight * goldPrice;
             return { ...product, price: price.toFixed(2) };
         });
 
@@ -33,20 +35,22 @@ app.get("/api/products", async (req, res) => {
         console.error("GoldAPI hatası:", error);
         const fallbackPrice = 60;
         const productsWithPrice = productsData.map((product) => {
-            const price = (product.popularityScore + 1) * product.weight * fallbackPrice;
+            const price =
+                (product.popularityScore + 1) * product.weight * fallbackPrice;
             return { ...product, price: price.toFixed(2) };
         });
         res.json(productsWithPrice);
     }
 });
 
-app.use(express.static(path.join(__dirname, "client")));
 
-app.use((req, res) => {
-    res.sendFile(path.join(__dirname, "client", "index.html"));
+app.use(express.static(path.join(__dirname, "client", "build")));
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Backend aktif: http://localhost:${PORT}`);
+    console.log(`✅ Server çalışıyor: http://localhost:${PORT}`);
 });
