@@ -1,13 +1,12 @@
-require("dotenv").config();
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const productsData = require("./products.json");
-const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
 const GOLD_API_URL = "https://www.goldapi.io/api/XAU/USD";
 const GOLD_API_TOKEN = process.env.GOLD_API_KEY;
@@ -21,7 +20,6 @@ app.get("/api/products", async (req, res) => {
                 "Content-Type": "application/json",
             },
         });
-
         const goldData = await response.json();
         const goldPrice = goldData.price;
 
@@ -33,20 +31,18 @@ app.get("/api/products", async (req, res) => {
         res.json(productsWithPrice);
     } catch (error) {
         console.error("GoldAPI hatası:", error);
-
         const fallbackPrice = 60;
         const productsWithPrice = productsData.map((product) => {
             const price = (product.popularityScore + 1) * product.weight * fallbackPrice;
             return { ...product, price: price.toFixed(2) };
         });
-
         res.json(productsWithPrice);
     }
 });
 
 app.use(express.static(path.join(__dirname, "client")));
 
-app.get("/*", (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, "client", "index.html"));
 });
 
